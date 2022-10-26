@@ -1,5 +1,10 @@
 {
   "dependencies": {
+<<<<<<< HEAD
     "csv-parser": "^3.0.0"
+=======
+    "csv-parser": "^3.0.0",
+    "get-stream": "^6.0.1"
+>>>>>>> 95a9826dd9830db991ef8abba5a95dbeca662b48
   }
 }
