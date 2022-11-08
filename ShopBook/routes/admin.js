@@ -1,14 +1,23 @@
 const express = require('express');
 
-const productController = require('../controllers/product')
+const adminProductCrontoller = require('../controllers/adminProduct')
 
 const router = express.Router();
 
-// /admin/add-product => GET
-router.get('/add-product', productController.getAddProduct);
 
-// /admin/add-product => POST
-router.post('/add-product', productController.postAddProduct);
+router.get('/add-product', adminProductCrontoller.getAddProduct);
+
+router.post('/add-product', adminProductCrontoller.postAddProduct);
+
+router.get('/products', adminProductCrontoller.getHomeAdmin);
+
+router.get('/edit-product/:productID', adminProductCrontoller.getEditAdmin);
+
+router.post('/edit-product/', adminProductCrontoller.postEditAdmin);
+
+router.post('/delete-product/', adminProductCrontoller.postDeleteAdmin);
+
+
 
 exports.routes = router;
 
