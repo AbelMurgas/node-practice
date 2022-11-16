@@ -7,13 +7,13 @@ exports.postAddProduct = (req, res, next) => {
 };
 
 exports.getIndex = (req, res, next) => {
-  Product.fetchAll()
-    .then(([rows, fielData]) => {
+  Product.findAll()
+    .then((products) => {
       res.render("shop/index", {
-        prods: rows,
+        prods: products,
         pageTitle: "Home",
         path: "/",
-        hasProducts: rows.length > 0,
+        hasProducts: products.length > 0,
         activeShop: true,
         productCSS: true,
       });
@@ -22,13 +22,13 @@ exports.getIndex = (req, res, next) => {
 };
 
 exports.getProducts = (req, res, next) => {
-  Product.fetchAll()
-    .then(([rows, fielData]) => {
+  Product.findAll()
+    .then((products) => {
       res.render("shop/product-list", {
-        prods: rows,
+        prods: products,
         pageTitle: "Products",
         path: "/products",
-        hasProducts: rows.length > 0,
+        hasProducts: products.length > 0,
         activeShop: true,
         productCSS: true,
       });
@@ -38,11 +38,10 @@ exports.getProducts = (req, res, next) => {
 
 exports.getProduct = (req, res) => {
   const productId = req.params.productID;
-  Product.fetchByID(productId)
-    .then(([product]) => {
-      console.log(product)
+  Product.findByPk(productId)
+    .then((product) => {
       res.render("shop/product-detail", {
-        prod: product[0],
+        prod: product,
         pageTitle: "Detail",
         path: "/products",
         id: productId,
