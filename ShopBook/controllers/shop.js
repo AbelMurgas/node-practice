@@ -7,40 +7,46 @@ exports.postAddProduct = (req, res, next) => {
 };
 
 exports.getIndex = (req, res, next) => {
-  const products = Product.fetchAll((products) => {
-    res.render("shop/index", {
-      prods: products,
-      pageTitle: "Home",
-      path: "/",
-      hasProducts: products.length > 0,
-      activeShop: true,
-      productCSS: true,
-    });
-  });
+  Product.fetchAll()
+    .then(([rows, fielData]) => {
+      res.render("shop/index", {
+        prods: rows,
+        pageTitle: "Home",
+        path: "/",
+        hasProducts: rows.length > 0,
+        activeShop: true,
+        productCSS: true,
+      });
+    })
+    .catch((err) => console.log(err));
 };
 
 exports.getProducts = (req, res, next) => {
-  Product.fetchAll((products) => {
-    res.render("shop/product-list", {
-      prods: products,
-      pageTitle: "Products",
-      path: "/products",
-      hasProducts: products.length > 0,
-      activeShop: true,
-      productCSS: true,
-    });
-  });
+  Product.fetchAll()
+    .then(([rows, fielData]) => {
+      res.render("shop/product-list", {
+        prods: rows,
+        pageTitle: "Products",
+        path: "/products",
+        hasProducts: rows.length > 0,
+        activeShop: true,
+        productCSS: true,
+      });
+    })
+    .catch((err) => console.log(err));
 };
 
 exports.getProduct = (req, res) => {
   const productId = req.params.productID;
-  Product.fetch(productId, (product) => {
-    console.log(product)
-    res.render("shop/product-detail", {
-      prod: product,
-      pageTitle:"Detail",
-      path: "/products",
-      id: productId,
-    });
-  })
+  Product.fetchByID(productId)
+    .then(([product]) => {
+      console.log(product)
+      res.render("shop/product-detail", {
+        prod: product[0],
+        pageTitle: "Detail",
+        path: "/products",
+        id: productId,
+      });
+    })
+    .catch((err) => console.log(err));
 };
