@@ -13,17 +13,21 @@ exports.postAddProduct = (req, res, next) => {
   const price = req.body.price;
   const description = req.body.description;
   const product = new Product(title, imageUrl, price, description);
-  product.save();
-  res.redirect("/");
+  product
+    .save()
+    .then(() => {
+      res.redirect("/");
+    })
+    .catch((err) => console.log(err));
 };
 
 exports.getHomeAdmin = (req, res) => {
-  Product.fetchAll((products) => {
+  Product.fetchAll().then(([row, fieldata]) => {
     res.render("admin/products", {
-      prods: products,
+      prods: row,
       pageTitle: "Products",
-      path: "/products",
-      hasProducts: products.length > 0,
+      path: "/admin/products",
+      hasProducts: row.length > 0,
       activeShop: true,
       productCSS: true,
     });
@@ -32,32 +36,28 @@ exports.getHomeAdmin = (req, res) => {
 
 exports.getEditAdmin = (req, res) => {
   const productId = req.params.productID;
-  Product.fetch(productId, (product) => {
+  Product.fetchByID(productId).then(([product]) => {
     res.render("admin/edit-product", {
-      prod: product,
+      prod: product[0],
       pageTitle: "Edit Product",
       id: productId,
-      path: ""
+      path: "",
     });
-  });
+  }).catch(err => console.log(err));
 };
 
 exports.postEditAdmin = (req, res) => {
-  const  productObject = {
+  const productObject = {
     id: req.body.id,
     title: req.body.title,
     imageUrl: req.body.imageUrl,
     price: req.body.price,
-    description: req.body.description
+    description: req.body.description,
   };
-  Product.updateByID(productObject, () => {
-    res.redirect("/admin/products")
-  });
+  Product.updateByID(productObject).then(() => res.redirect("/admin/products")).catch(err => console.log(err));
 };
 
 exports.postDeleteAdmin = (req, res) => {
-  const  productId = req.body.id;
-  Product.deleteByID(productId, () => {
-    res.redirect("/admin/products")
-  });
+  const productId = req.body.id;
+  Product.deleteByID(productId).then(() => res.redirect("/admin/products")).catch(err => console.log(err))
 };
