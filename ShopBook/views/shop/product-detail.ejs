@@ -24,6 +24,10 @@
                                  <%= prod.description %>
                              </p>
                          </div>
+                         <div class="card__actions">
+                            <%- include('../includes/add-to-cart.ejs', {product: prod}) %>
+                        </div>
+                         
                      </article>
              </div>
      </main>
