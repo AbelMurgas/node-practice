@@ -1,4 +1,5 @@
 const Product = require("../models/product");
+const User = require("../models/user");
 
 exports.postAddProduct = (req, res, next) => {
   const product = new Product(req.body.title);
@@ -7,7 +8,7 @@ exports.postAddProduct = (req, res, next) => {
 };
 
 exports.getIndex = (req, res, next) => {
-  Product.findAll()
+  Product.fetchAll()
     .then((products) => {
       res.render("shop/index", {
         prods: products,
@@ -22,7 +23,7 @@ exports.getIndex = (req, res, next) => {
 };
 
 exports.getProducts = (req, res, next) => {
-  Product.findAll()
+  Product.fetchAll()
     .then((products) => {
       res.render("shop/product-list", {
         prods: products,
@@ -53,23 +54,30 @@ exports.getProduct = (req, res) => {
 exports.getCart = (req, res, next) => {
   req.user
     .getCart()
-    .then((cart) => {
-      return cart
-        .getProducts()
-        .then((products) => {
-          res.render("shop/cart", {
-            path: "/cart",
-            pageTitle: "Your Cart",
-            products: products,
-          });
-        })
-        .catch((err) => console.log(err));
+    .then((products) => {
+      console.log(products)
+      res.render("shop/cart", {
+        path: "/cart",
+        pageTitle: "Your Cart",
+        products: products,
+      });
     })
     .catch((err) => console.log(err));
 };
 
 exports.postCart = (req, res, next) => {
   const prodId = req.body.productId;
+  Product.findByPk(prodId).then(product => {
+    req.user.addToCart(product)
+  })
+  .then(result => {
+    res.redirect("/cart");
+  })
+  .catch(err => {
+    console.log(err)
+  })
+
+  /* --- SEQUELIZE ---
   let fetchedCart;
   let newQuantity = 1;
   req.user
@@ -99,6 +107,7 @@ exports.postCart = (req, res, next) => {
       res.redirect("/cart");
     })
     .catch((err) => console.log(err));
+  */
 };
 
 exports.postCartDeleteProduct = (req, res, next) => {

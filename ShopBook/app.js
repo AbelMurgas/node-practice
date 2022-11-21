@@ -1,4 +1,5 @@
 const path = require("path");
+const config =  require('./config.js');
 
 const express = require("express");
 const bodyParser = require("body-parser");
@@ -26,6 +27,8 @@ const adminRoutes = require("./routes/admin");
 const errorController = require("./controllers/error");
 /*
 */
+
+console.log(`NODE_ENV=${config.NODE_ENV}`);
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, "public")));
@@ -100,5 +103,7 @@ sequelize
   });
 */
 mongoConnect((client) => {
-  app.listen(3000)
+  app.listen(config.PORT, config.HOST, () => {
+    console.log(`APP LISTENING ON http://${config.HOST}:${config.PORT}`);
+})
 })
