@@ -1,3 +1,4 @@
+/* --- SEQUELIZE ---
 const Sequelize = require('sequelize');
 
 const sequelize = require('../utils/database')
@@ -13,3 +14,4 @@ const CartItem = sequelize.define('cartItem', {
 });
 
 module.exports = CartItem
+*/
