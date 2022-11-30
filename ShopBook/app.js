@@ -1,12 +1,13 @@
 const path = require("path");
-const config =  require('./config.js');
+const config = require("./config.js");
 
 const express = require("express");
 const bodyParser = require("body-parser");
+const mongoose = require("mongoose");
 
-const mongoConnect = require('./utils/database').mongoConnect;
+// const mongoConnect = require("./utils/database").mongoConnect;
 
-const User = require('./models/user')
+const User = require("./models/user");
 /*
 const sequelize = require("./utils/database");
 const Product = require("./models/product");
@@ -26,7 +27,7 @@ const shopRoutes = require("./routes/shop");
 const adminRoutes = require("./routes/admin");
 const errorController = require("./controllers/error");
 /*
-*/
+ */
 
 console.log(`NODE_ENV=${config.NODE_ENV}`);
 
@@ -34,27 +35,51 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, "public")));
 
 app.use((req, res, next) => {
-  User.findByPk('637bc218d1d4c9d215112d0d')
+  User.findById("63870fae5a31c96514456132")
     .then((user) => {
-      req.user = new User(user.name, user.email, user.cart , user._id)
+      req.user = user;
       next();
     })
     .catch();
-  /* --- SEQUELIZE
+});
+/* --- SEQUELIZE
   User.findByPk(1)
     .then((user) => {
       req.user = user;
       next();
     })
     .catch();
+  });
   */
-});
 
 app.use("/admin", adminRoutes.routes);
 app.use(shopRoutes.routes);
 app.use(errorController.get404);
 
-
+mongoose
+  .connect(
+    "mongodb+srv://abelm:212319972006@cluster0.ssc1tcl.mongodb.net/shop?retryWrites=true&w=majority"
+  )
+  .then((result) => {
+    User.findOne().then((user) => {
+      if (!user) {
+        const user = new User({
+          name: "Abel",
+          email: "abel@test.com",
+          cart: {
+            items: [],
+          },
+        });
+        user.save();
+      }
+    });
+    app.listen(config.PORT, config.HOST, () => {
+      console.log(`APP LISTENING ON http://${config.HOST}:${config.PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.log(err + "Hi ----------");
+  });
 
 /* --- SEQUELIZE ---
 Product.belongsTo(User, { constraints: true, onDelete: "CASCADE" });
@@ -102,8 +127,10 @@ sequelize
     console.log(err);
   });
 */
+/*
 mongoConnect((client) => {
   app.listen(config.PORT, config.HOST, () => {
     console.log(`APP LISTENING ON http://${config.HOST}:${config.PORT}`);
-})
-})
+  });
+});
+*/
