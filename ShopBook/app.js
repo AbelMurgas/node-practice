@@ -58,7 +58,7 @@ app.use(errorController.get404);
 
 mongoose
   .connect(
-    "mongodb+srv://abelm:212319972006@cluster0.ssc1tcl.mongodb.net/shop?retryWrites=true&w=majority"
+    `mongodb+srv://${config.DBUSER}:${config.DBPASS}@cluster0.ssc1tcl.mongodb.net/shop?retryWrites=true&w=majority`
   )
   .then((result) => {
     User.findOne().then((user) => {
@@ -78,7 +78,7 @@ mongoose
     });
   })
   .catch((err) => {
-    console.log(err + "Hi ----------");
+    console.log(err);
   });
 
 /* --- SEQUELIZE ---
