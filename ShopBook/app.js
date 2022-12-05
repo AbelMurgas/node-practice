@@ -5,6 +5,9 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 
+const session = require("express-session");
+const MongoDBStore = require("connect-mongodb-session")(session);
+
 // const mongoConnect = require("./utils/database").mongoConnect;
 
 const User = require("./models/user");
@@ -19,29 +22,52 @@ const OrderItem = require("./models/order-item");
 */
 
 const app = express();
+const store = new MongoDBStore({
+  uri: `mongodb+srv://${config.DBUSER}:${config.DBPASS}@cluster0.ssc1tcl.mongodb.net/shop?retryWrites=true&w=majority`,
+  collection: "sessions",
+});
 
 app.set("view engine", "ejs");
 app.set("views", "views");
 
 const shopRoutes = require("./routes/shop");
 const adminRoutes = require("./routes/admin");
+const authRoutes = require("./routes/auth");
+
 const errorController = require("./controllers/error");
-/*
- */
 
 console.log(`NODE_ENV=${config.NODE_ENV}`);
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, "public")));
+app.use(
+  session({
+    secret: "my secret",
+    resave: false,
+    saveUninitialized: false,
+    store: store,
+  })
+);
 
 app.use((req, res, next) => {
-  User.findById("63870fae5a31c96514456132")
-    .then((user) => {
+  if (!req.session.user) {
+    next();
+  } else{
+    User.findById(req.session.user._id).then((user) => {
       req.user = user;
       next();
-    })
-    .catch();
+    });
+  }
 });
+
+// app.use((req, res, next) => {
+//   User.findById("63870fae5a31c96514456132")
+//     .then((user) => {
+//       req.user = user;
+//       next();
+//     })
+//     .catch();
+// });
 /* --- SEQUELIZE
   User.findByPk(1)
     .then((user) => {
@@ -52,8 +78,10 @@ app.use((req, res, next) => {
   });
   */
 
-app.use("/admin", adminRoutes.routes);
-app.use(shopRoutes.routes);
+app.use("/admin", adminRoutes);
+app.use(shopRoutes);
+app.use(authRoutes);
+
 app.use(errorController.get404);
 
 mongoose
