@@ -19,5 +19,5 @@ router.post('/delete-product/', adminProductCrontoller.postDeleteAdmin);
 
 
 
-exports.routes = router;
+module.exports = router;
 

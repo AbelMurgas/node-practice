@@ -20,4 +20,4 @@ router.post("/create-order", productController.postOrder);
 
 router.get("/orders", productController.getOrders);
 
-exports.routes = router;
+module.exports = router;

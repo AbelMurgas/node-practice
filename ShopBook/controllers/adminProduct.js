@@ -5,6 +5,7 @@ exports.getAddProduct = (req, res, next) => {
   res.render("admin/add-product", {
     pageTitle: "Add Product",
     path: "/admin/add-product",
+    isAuthenticated: req.session.isLoggedIn
   });
 };
 
@@ -18,7 +19,7 @@ exports.postAddProduct = (req, res, next) => {
     price: price,
     description: description,
     imageUrl: imageUrl,
-    userId: req.user,
+    userId: req.session.user,
   });
   product
     .save()
@@ -42,6 +43,7 @@ exports.getHomeAdmin = (req, res) => {
         hasProducts: products.length > 0,
         activeShop: true,
         productCSS: true,
+        isAuthenticated: req.session.isLoggedIn
       });
     })
     .catch((err) => {
@@ -58,6 +60,7 @@ exports.getEditAdmin = (req, res) => {
         prod: product,
         pageTitle: "Edit Product",
         path: "",
+        isAuthenticated: req.session.isLoggedIn
       });
     })
     .catch((err) => console.log(err));
@@ -74,7 +77,7 @@ exports.postEditAdmin = (req, res) => {
     price: price,
     description: description,
     imageUrl: imageUrl,
-    userId: req.user,
+    userId: req.session.user,
   };
   product.findByIdAndUpdate(id,newProduct)
     .then((result) => {
