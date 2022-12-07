@@ -1,23 +1,20 @@
-const express = require('express');
+const express = require("express");
 
-const adminProductCrontoller = require('../controllers/adminProduct')
+const adminProductCrontoller = require("../controllers/adminProduct");
+const isAuth = require("../middleware/is-auth");
 
 const router = express.Router();
 
+router.get("/add-product", isAuth, adminProductCrontoller.getAddProduct);
 
-router.get('/add-product', adminProductCrontoller.getAddProduct);
+router.post("/add-product", isAuth, adminProductCrontoller.postAddProduct);
 
-router.post('/add-product', adminProductCrontoller.postAddProduct);
+router.get("/products", isAuth, adminProductCrontoller.getHomeAdmin);
 
-router.get('/products', adminProductCrontoller.getHomeAdmin);
+router.get("/edit-product/:productID",isAuth ,adminProductCrontoller.getEditAdmin);
 
-router.get('/edit-product/:productID', adminProductCrontoller.getEditAdmin);
+router.post("/edit-product/", isAuth, adminProductCrontoller.postEditAdmin);
 
-router.post('/edit-product/', adminProductCrontoller.postEditAdmin);
-
-router.post('/delete-product/', adminProductCrontoller.postDeleteAdmin);
-
-
+router.post("/delete-product/", isAuth, adminProductCrontoller.postDeleteAdmin);
 
 module.exports = router;
-

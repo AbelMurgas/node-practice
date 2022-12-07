@@ -8,6 +8,10 @@ const orderSchema = new Schema({
     ref: "User",
     required: true,
   },
+  email: {
+    type: String,
+    require: true
+  },
   cart: {
     items: [
       {
