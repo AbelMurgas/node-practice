@@ -64,6 +64,20 @@ exports.getCart = (req, res, next) => {
     .catch((err) => console.log(err));
 };
 
+exports.getOrders = (req, res, next) => {
+  Order.find({ userId: req.user })
+    .populate("cart.items.productId")
+    .then((orders) => {
+      res.render("shop/orders", {
+        path: "/orders",
+        pageTitle: "Your Orders",
+        orders: orders,
+        isAuthenticated: req.session.isLoggedIn,
+      });
+    })
+    .catch((err) => console.log(err));
+};
+
 exports.postCart = (req, res, next) => {
   const prodId = req.body.productId;
   Product.findById(prodId)
@@ -76,38 +90,6 @@ exports.postCart = (req, res, next) => {
     .catch((err) => {
       console.log(err);
     });
-
-  /* --- SEQUELIZE ---
-  let fetchedCart;
-  let newQuantity = 1;
-  req.user
-    .getCart()
-    .then((cart) => {
-      fetchedCart = cart;
-      return cart.getProducts({ where: { id: prodId } });
-    })
-    .then((products) => {
-      let product;
-      if (products.length > 0) {
-        product = products[0];
-      }
-      if (product) {
-        const oldQuantity = product.cartItem.quantity;
-        newQuantity = oldQuantity + 1;
-        return product;
-      }
-      return Product.findByPk(prodId);
-    })
-    .then((data) => {
-      return fetchedCart.addProduct(data, {
-        through: { quantity: newQuantity },
-      });
-    })
-    .then(() => {
-      res.redirect("/cart");
-    })
-    .catch((err) => console.log(err));
-  */
 };
 
 exports.postCartDeleteProduct = (req, res, next) => {
@@ -122,9 +104,11 @@ exports.postCartDeleteProduct = (req, res, next) => {
 
 exports.postOrder = (req, res, next) => {
   const userId = req.user._id;
+  const email = req.user.email;
   const cart = req.user.cart;
   const order = new Order({
     userId: userId,
+    email: email,
     cart: cart,
   });
   order
@@ -132,20 +116,6 @@ exports.postOrder = (req, res, next) => {
     .then((result) => {
       User.findByIdAndUpdate(req.user._id, { cart: [] }).then((result) => {
         res.redirect("/orders");
-      });
-    })
-    .catch((err) => console.log(err));
-};
-
-exports.getOrders = (req, res, next) => {
-  Order.find({ userId: req.user })
-    .populate("cart.items.productId")
-    .then((orders) => {
-      res.render("shop/orders", {
-        path: "/orders",
-        pageTitle: "Your Orders",
-        orders: orders,
-        isAuthenticated: req.session.isLoggedIn,
       });
     })
     .catch((err) => console.log(err));
