@@ -34,7 +34,8 @@ exports.postAddProduct = (req, res, next) => {
 };
 
 exports.getHomeAdmin = (req, res) => {
-  Product.find()
+  const user = req.session.user
+  Product.find({userId: user})
     .then((products) => {
       res.render("admin/products", {
         prods: products,
