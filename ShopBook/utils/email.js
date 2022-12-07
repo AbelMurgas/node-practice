@@ -9,13 +9,11 @@ class EmailManagement {
       subject: subject,
       html: html,
     };
-    sgMail.setApiKey(
-      "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"
-    );
+    sgMail.setApiKey(config.EMAIL_API_KEY);
   }
 
   sendEmail() {
-    return sgMail.send(this.mailOption)
+    return sgMail.send(this.mailOption);
   }
 }
 
