@@ -43,13 +43,14 @@
         <% } %>
       </ul>
     </div>
+    <% if (path != "/signup" && path != "/login") { %>
     <div>
       <ul class="main-header__item-list">
-        
         <% if (typeof isAuthenticated !== "undefined") { %>
         <li class="main-header__item">
-            <form action="/logout" method="post">
-                <button ype="submit">Logout</button>
+          <form action="/logout" method="post">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <button ype="submit">Logout</button>
             </form>
         </li>
         <% } else { %>
@@ -58,9 +59,15 @@
                 >Login</a
             >
         </li>
+        <li class="main-header__item">
+          <a class="<%= path === '/signup' ? 'active' : '' %>" href="/signup"
+              >Signup</a
+          >
+        </li>
         <% } %>
       </ul>
     </div>
+    <% } %>
   </nav>
 </header>
 
