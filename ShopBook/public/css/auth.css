@@ -4,3 +4,7 @@
   margin: auto;
   display: block;
 }
+
+.login-form .incorrect{
+  border: 1px red solid;
+}
