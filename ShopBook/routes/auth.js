@@ -19,6 +19,7 @@ router.post(
   [
     check("email")
       .isEmail()
+      .normalizeEmail()
       .withMessage("Please insert a correct email")
       .custom((value, { req }) => {
         return User.findOne({ email: value }).then((user) => {
@@ -45,6 +46,7 @@ router.post(
   [
     check("email")
       .isEmail()
+      .normalizeEmail()
       .withMessage("Please insert a correct email")
       .custom((value, { req }) => {
         return User.findOne({ email: value }).then((userDoc) => {
@@ -58,10 +60,17 @@ router.post(
     body("password", "The password is incorrect")
       .isLength({ min: 5 })
       .isAlphanumeric()
-      .withMessage(),
+      .trim(),
     body("confirmPassword")
-      .equals(body("password"))
-      .withMessage("This password not match"),
+      .trim()
+      .custom((value, { req }) => {
+        console.log(value, req.body.password)
+        if (value !== req.body.password){
+          console.log("GUAT")
+          throw new Error("This password not match")
+        }
+        return true 
+      })
   ],
   authController.postSignup
 );

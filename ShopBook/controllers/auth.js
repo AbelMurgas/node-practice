@@ -59,10 +59,15 @@ exports.postLogin = (req, res, next) => {
     const errorsList = errors.map((data, index) => {
       return data.msg
     })
+    const errorsEntity = errors.map((data, index) => {
+      return data.param
+    })
     return res.status(422).render("auth/login", {
       path: "/login",
       pageTitle: "Login",
       errorMessage: errorsList,
+      oldEmail: email,
+      errorsEntity: errorsEntity
     });
   }
   User.findOne({ email: email })
@@ -85,16 +90,20 @@ exports.postLogout = (req, res, next) => {
 exports.postSignup = (req, res, next) => {
   const emailUser = req.body.email;
   const password = req.body.password;
-  const confirmPassword = req.body.confirmPassword;
   const errors = validationResult(req).errors;
   if (errors.length > 0) {
     const errorsList = errors.map((data, index) => {
       return data.msg
     })
+    const errorsEntity = errors.map((data, index) => {
+      return data.param
+    })
     return res.status(422).render("auth/signup", {
       path: "/signup",
       pageTitle: "Signup",
       errorMessage: errorsList,
+      oldEmail: emailUser,
+      errorsEntity: errorsEntity
     });
   }
   return bcrypt
