@@ -1,5 +1,6 @@
 const crypto = require("crypto"); // Token
 const bcrypt = require("bcryptjs"); // Crypting
+const { validationResult } = require("express-validator");
 
 const EmailManagement = require("../utils/email");
 
@@ -14,9 +15,11 @@ exports.getLogin = (req, res, next) => {
 };
 
 exports.getSignup = (req, res, next) => {
+  let message = req.flash("error");
   res.render("auth/signup", {
     path: "/signup",
     pageTitle: "Signup",
+    errorMessage: message,
   });
 };
 
@@ -51,31 +54,26 @@ exports.getNewPassword = (req, res, next) => {
 
 exports.postLogin = (req, res, next) => {
   const email = req.body.email;
-  const password = req.body.password;
+  const errors = validationResult(req).errors;
+  if (errors.length > 0) {
+    const errorsList = errors.map((data, index) => {
+      return data.msg
+    })
+    return res.status(422).render("auth/login", {
+      path: "/login",
+      pageTitle: "Login",
+      errorMessage: errorsList,
+    });
+  }
   User.findOne({ email: email })
     .then((user) => {
-      if (!user) {
-        req.flash("err", "Invalid email");
-        return res.redirect("/login");
-      }
-      return bcrypt
-        .compare(password, user.password)
-        .then((isEqual) => {
-          if (!isEqual) {
-            req.flash("err", "Invalid password");
-            return res.redirect("/login");
-          }
-          req.session.user = user;
-          req.session.isLoggedIn = true;
-          return res.redirect("/");
-        })
-        .catch((err) => {
-          console.log(err);
-        });
-    })
-    .catch((err) => {
-      console.log(err);
-    });
+      req.session.user = user;
+      req.session.isLoggedIn = true;
+      return res.redirect("/");
+      })
+      .catch((err) => {
+        console.log(err);
+      });
 };
 
 exports.postLogout = (req, res, next) => {
@@ -88,35 +86,37 @@ exports.postSignup = (req, res, next) => {
   const emailUser = req.body.email;
   const password = req.body.password;
   const confirmPassword = req.body.confirmPassword;
-  User.findOne({ email: emailUser })
-    .then((userDoc) => {
-      if (userDoc) {
-        return res.redirect("/signup");
-      }
-      return bcrypt
-        .hash(password, 12)
-        .then((hashedPassword) => {
-          const user = new User({
-            email: emailUser,
-            password: hashedPassword,
-            cart: {
-              item: [],
-            },
-          });
-          return user.save();
-        })
+  const errors = validationResult(req).errors;
+  if (errors.length > 0) {
+    const errorsList = errors.map((data, index) => {
+      return data.msg
+    })
+    return res.status(422).render("auth/signup", {
+      path: "/signup",
+      pageTitle: "Signup",
+      errorMessage: errorsList,
+    });
+  }
+  return bcrypt
+    .hash(password, 12)
+    .then((hashedPassword) => {
+      const user = new User({
+        email: emailUser,
+        password: hashedPassword,
+        cart: {
+          item: [],
+        },
+      });
+      return user.save();
+    })
+    .then((result) => {
+      const subject = "Signup succeeded!";
+      const html = "<h1>You successfully sign up!</h1>";
+      newEmail = new EmailManagement(emailUser, subject, html);
+      newEmail
+        .sendEmail()
         .then((result) => {
-          const subject = "Signup succeeded!";
-          const html = "<h1>You successfully sign up!</h1>";
-          newEmail = new EmailManagement(emailUser, subject, html);
-          newEmail
-            .sendEmail()
-            .then((result) => {
-              res.redirect("/login");
-            })
-            .catch((err) => {
-              console.log(err);
-            });
+          res.redirect("/login");
         })
         .catch((err) => {
           console.log(err);
