@@ -1,16 +1,17 @@
-const product = require("../models/product");
+const Product = require("../models/product");
+const { validationResult } = require("express-validator");
 
 exports.getAddProduct = (req, res, next) => {
   res.render("admin/add-product", {
     pageTitle: "Add Product",
     path: "/admin/add-product",
-    isAuthenticated: req.session.isLoggedIn
+    isAuthenticated: req.session.isLoggedIn,
   });
 };
 
 exports.getHomeAdmin = (req, res) => {
-  const user = req.session.user
-  Product.find({userId: user})
+  const user = req.session.user;
+  Product.find({ userId: user })
     .then((products) => {
       res.render("admin/products", {
         prods: products,
@@ -19,7 +20,7 @@ exports.getHomeAdmin = (req, res) => {
         hasProducts: products.length > 0,
         activeShop: true,
         productCSS: true,
-        isAuthenticated: req.session.isLoggedIn
+        isAuthenticated: req.session.isLoggedIn,
       });
     })
     .catch((err) => {
@@ -36,19 +37,42 @@ exports.getEditAdmin = (req, res) => {
         prod: product,
         pageTitle: "Edit Product",
         path: "",
-        isAuthenticated: req.session.isLoggedIn
+        isAuthenticated: req.session.isLoggedIn,
       });
     })
     .catch((err) => console.log(err));
 };
 
 exports.postAddProduct = (req, res, next) => {
+  const errors = validationResult(req).errors;
+  console.log(errors)
+  if (errors.length > 0) {
+    const errorsList = errors.map((data, index) => {
+      return data.msg;
+    });
+    const errorsEntity = errors.map((data, index) => {
+      return data.param;
+    });
+    console.log(errorsEntity);
+    return res.status(422).render("admin/add-product", {
+      pageTitle: "Add Product",
+      path: "/admin/add-product",
+      isAuthenticated: req.session.isLoggedIn,
+      errorMessage: errorsList,
+      errorsEntity: errorsEntity,
+    });
+  }
   const title = req.body.title;
+  const words = title.split(" ");
+  for (let i = 0; i < words.length; i++) {
+      words[i] = words[i][0].toUpperCase() + words[i].substr(1);
+  }
+  const titleWithPascalCase = words.join(" ");
   const imageUrl = req.body.imageUrl;
   const price = req.body.price;
   const description = req.body.description;
   const product = new Product({
-    title: title,
+    title: titleWithPascalCase,
     price: price,
     description: description,
     imageUrl: imageUrl,
@@ -79,7 +103,8 @@ exports.postEditAdmin = (req, res) => {
     imageUrl: imageUrl,
     userId: req.session.user,
   };
-  product.findByIdAndUpdate(id,newProduct)
+  product
+    .findByIdAndUpdate(id, newProduct)
     .then((result) => {
       console.log("UPDATED PRODUCT");
       res.redirect("/admin/products");
