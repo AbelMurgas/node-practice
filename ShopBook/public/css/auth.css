@@ -5,6 +5,6 @@
   display: block;
 }
 
-.login-form .incorrect{
+.form-control .incorrect{
   border: 1px red solid;
 }
