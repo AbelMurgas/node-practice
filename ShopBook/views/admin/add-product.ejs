@@ -1,28 +1,40 @@
 <%- include('../includes/head.ejs') %>
     <link rel="stylesheet" href="/css/forms.css">
     <link rel="stylesheet" href="/css/product.css">
+    <link rel="stylesheet" href="/css/auth.css">
 </head>
 
 <body>
    <%- include('../includes/navigation.ejs') %>
 
     <main>
+        <% if (typeof errorMessage !== "undefined") { %>
+            <div class="user-message user-message--error"><%= errorMessage %></div>
+        <% } %>
         <form class="product-form" action="/admin/add-product" method="POST">
             <div class="form-control">
                 <label for="title">Title</label>
-                <input type="text" name="title" id="title">
+                <input type="text" name="title" id="title" class="<%= (typeof errorsEntity !== 'undefined') 
+                ? (errorsEntity.find(e => e === 'title') ? 'incorrect' : '')
+                : '' %>">
             </div>
             <div class="form-control">
                 <label for="imageUrl">Image URL</label>
-                <input type="text" name="imageUrl" id="imageUrl">
+                <input type="text" name="imageUrl" id="imageUrl" class="<%= (typeof errorsEntity !== 'undefined') 
+                ? (errorsEntity.find(e => e === 'imageUrl') ? 'incorrect' : '')
+                : '' %>">
             </div>
             <div class="form-control">
                 <label for="price">Price</label>
-                <input type="number" name="price" id="price" step="0.01">
+                <input type="number" name="price" id="price" step="0.01" class="<%= (typeof errorsEntity !== 'undefined') 
+                ? (errorsEntity.find(e => e === 'price') ? 'incorrect' : '')
+                : '' %>">
             </div>
             <div class="form-control">
                 <label for="description">Description</label>
-                <textarea name="description" id="description" rows="5"></textarea>
+                <textarea maxlength="250" name="description" id="description" rows="5" class="<%= (typeof errorsEntity !== 'undefined') 
+                ? (errorsEntity.find(e => e === 'description') ? 'incorrect' : '')
+                : '' %>"></textarea>
             </div>
             <input type="hidden" name="_csrf" value="<%= csrfToken %>">
             <button class="btn" type="submit">Add Product</button>
