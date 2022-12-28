@@ -45,7 +45,6 @@ exports.getEditAdmin = (req, res) => {
 
 exports.postAddProduct = (req, res, next) => {
   const errors = validationResult(req).errors;
-  console.log(errors)
   if (errors.length > 0) {
     const errorsList = errors.map((data, index) => {
       return data.msg;
