@@ -21,4 +21,6 @@ router.post("/create-order", isAuth, productController.postOrder);
 
 router.get("/orders", isAuth, productController.getOrders);
 
+router.get("/orders/:orderId", isAuth, productController.getInvoice);
+
 module.exports = router;
