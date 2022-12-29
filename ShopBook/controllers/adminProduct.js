@@ -1,5 +1,6 @@
 const Product = require("../models/product");
 const { validationResult } = require("express-validator");
+const { deleteFile } = require("../utils/file");
 
 exports.getAddProduct = (req, res, next) => {
   res.render("admin/add-product", {
@@ -13,6 +14,7 @@ exports.getHomeAdmin = (req, res) => {
   const user = req.session.user;
   Product.find({ userId: user })
     .then((products) => {
+      console.log(products);
       res.render("admin/products", {
         prods: products,
         pageTitle: "Products",
@@ -52,7 +54,6 @@ exports.postAddProduct = (req, res, next) => {
     const errorsEntity = errors.map((data, index) => {
       return data.param;
     });
-    console.log(errorsEntity);
     return res.status(422).render("admin/add-product", {
       pageTitle: "Add Product",
       path: "/admin/add-product",
@@ -64,12 +65,21 @@ exports.postAddProduct = (req, res, next) => {
   const title = req.body.title;
   const words = title.split(" ");
   for (let i = 0; i < words.length; i++) {
-      words[i] = words[i][0].toUpperCase() + words[i].substr(1);
+    words[i] = words[i][0].toUpperCase() + words[i].substr(1);
   }
   const titleWithPascalCase = words.join(" ");
-  const imageUrl = req.body.imageUrl;
+  const image = req.file;
   const price = req.body.price;
   const description = req.body.description;
+  if (!image) {
+    return res.status(422).render("admin/add-product", {
+      pageTitle: "Add Product",
+      path: "/admin/add-product",
+      isAuthenticated: req.session.isLoggedIn,
+      errorMessage: ["File is not a image"],
+    });
+  }
+  const imageUrl = image.path;
   const product = new Product({
     title: titleWithPascalCase,
     price: price,
@@ -92,9 +102,18 @@ exports.postAddProduct = (req, res, next) => {
 exports.postEditAdmin = (req, res) => {
   const id = req.body.id;
   const title = req.body.title;
-  const imageUrl = req.body.imageUrl;
+  const image = req.file;
   const price = req.body.price;
   const description = req.body.description;
+  if (!image) {
+    return res.status(422).render("admin/edit-product", {
+      pageTitle: "Edit Product",
+      path: "admin/edit-product",
+      isAuthenticated: req.session.isLoggedIn,
+      errorMessage: ["File is not a image"],
+    });
+  }
+  imageUrl = image.path;
   const newProduct = {
     title: title,
     price: price,
@@ -102,9 +121,17 @@ exports.postEditAdmin = (req, res) => {
     imageUrl: imageUrl,
     userId: req.session.user,
   };
-  product
-    .findByIdAndUpdate(id, newProduct)
-    .then((result) => {
+  Product.findById(id)
+    .then((product) => {
+      if (!product) {
+        return next(new Error("No product found!"));
+      }
+      deleteFile(product.imageUrl);
+      product.title = newProduct.title;
+      product.price = newProduct.price;
+      product.description = newProduct.description;
+      product.imageUrl = newProduct.imageUrl;
+      product.save()
       console.log("UPDATED PRODUCT");
       res.redirect("/admin/products");
     })
@@ -113,10 +140,13 @@ exports.postEditAdmin = (req, res) => {
 
 exports.postDeleteAdmin = (req, res) => {
   const productId = req.body.id;
-  Product.findByIdAndRemove(productId)
-    .then((result) => {
-      console.log("DELETED PRODUCT");
-      res.redirect("/admin/products");
+  Product.findById(productId)
+    .then((product) => {
+      deleteFile(product.imageUrl);
+      product.remove().then(result => {
+        console.log("DELETED PRODUCT");
+        res.redirect("/admin/products");
+      })
     })
     .catch((err) => console.log(err));
 };

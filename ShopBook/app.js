@@ -1,5 +1,6 @@
 const path = require("path");
 const config = require("./config.js");
+const fs = require("./utils/fileStorage");
 
 const express = require("express");
 const bodyParser = require("body-parser");
@@ -29,7 +30,10 @@ const errorController = require("./controllers/error");
 console.log(`NODE_ENV=${config.NODE_ENV}`);
 
 app.use(bodyParser.urlencoded({ extended: false }));
+app.use(fs.dowloadImage);
 app.use(express.static(path.join(__dirname, "public")));
+app.use("/images", express.static("images"));
+
 app.use(
   session({
     secret: "my secret",
@@ -58,7 +62,7 @@ app.use((req, res, next) => {
         next();
       })
       .catch((err) => {
-        next(new Error(err))
+        next(new Error(err));
       });
   }
 });
