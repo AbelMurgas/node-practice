@@ -76,12 +76,4 @@ exports.addProduct = [
   body("imageUrl")
     .notEmpty()
     .withMessage("Image url is required")
-    .custom((value) => {
-      return isImageURL(value).then((is_image) => {
-        if (!is_image) {
-          return Promise.reject("The image url not found");
-        }
-        return value;
-      });
-    }),
 ];
