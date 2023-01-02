@@ -3,7 +3,7 @@
 </head>
 
 <body>
-    <%- include('../includes/navigation.ejs', {isAuthenticated: isAuthenticated}) %>
+    <%- include('../includes/navigation.ejs') %>
 
     <main>
         <% if (prods.length > 0) { %>
@@ -14,7 +14,7 @@
                             <h1 class="product__title"><%= product.title %></h1>
                         </header>
                         <div class="card__image">
-                            <img src="<%= product.imageUrl %>"
+                            <img src="/<%= product.imageUrl %>"
                                 alt="<%= product.title %>">
                         </div>
                         <div class="card__content">
@@ -23,11 +23,25 @@
                         </div>
                         <div class="card__actions">
                             <a href="/products/<%= product._id %>" class="btn">Details</a>
-                        <%- include('../includes/add-to-cart.ejs', {product: product, isAuthenticated: isAuthenticated, csrfToken: csrfToken}) %>
-                    </div>
+                            <% if (isAuthenticated) { %>
+                                <%- include('../includes/add-to-cart.ejs', {product: product}) %>
+                            <% } %>
+                        </div>
                     </article>
                 <% } %>
             </div>
+            <% if (typeof amountPage !== "undefined") { %>
+                <section class="pagination">
+                    <% if (currentPage !== 1) { %>
+                        <a href="/?page=<%= beforePage %>"><%= beforePage %></a>
+                    <% } %>
+                    <a href="/?page=<%= currentPage %>" class="markPagination"><%= currentPage %></a>
+                    <% if(!finalPage){  %>
+                        <a href="/?page=<%= currentPage+1 %>"><%= currentPage+1 %></a>
+                        ...<a href="/?page=<%= currentPage+1 %>"><%= currentPage+1 %></a>
+                    <% } %>
+                </section>
+            <% } %>
         <% } else { %>
             <h1>No Products Found!</h1>
         <% } %>

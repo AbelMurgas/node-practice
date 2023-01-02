@@ -9,19 +9,35 @@ const User = require("../models/user");
 const Order = require("../models/order");
 
 exports.getIndex = (req, res, next) => {
-  Product.find()
-    .then((products) => {
-      res.render("shop/index", {
-        prods: products,
-        pageTitle: "Home",
-        path: "/",
-        hasProducts: products.length > 0,
-        activeShop: true,
-        productCSS: true,
-        isAuthenticated: req.session.isLoggedIn,
-      });
-    })
-    .catch((err) => console.log(err));
+  let currentPage = !req.query.page ? 1 : parseInt(req.query.page);
+  let TOTAL_PER_VIEW = 1;
+  console.log(currentPage);
+  Product.count().then((amount) => {
+    const amountPage = Math.ceil(amount / TOTAL_PER_VIEW);
+    if (currentPage>amountPage || currentPage <= 0){
+      res.redirect("/")
+    }
+    return Product.find()
+      .skip((currentPage - 1) * TOTAL_PER_VIEW)
+      .limit(TOTAL_PER_VIEW)
+      .then((products) => {
+        return res.render("shop/index", {
+          prods: products,
+          pageTitle: "Home",
+          path: "/",
+          hasProducts: products.length > 0,
+          activeShop: true,
+          productCSS: true,
+          isAuthenticated: req.session.isLoggedIn,
+          currentPage: currentPage,
+          beforePage: currentPage-1,
+          nextPage: currentPage+1,
+          amountPage: amountPage,
+          finalPage: (currentPage+1) === amountPage
+        });
+      })
+      .catch((err) => console.log(err));
+  });
 };
 
 exports.getProducts = (req, res, next) => {
