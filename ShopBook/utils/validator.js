@@ -73,7 +73,4 @@ exports.addProduct = [
     .withMessage("description is required")
     .isLength({ max: 250 })
     .withMessage("The description must be less thant 250 letter"),
-  body("imageUrl")
-    .notEmpty()
-    .withMessage("Image url is required")
 ];
