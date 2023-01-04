@@ -1,8 +1,9 @@
 const fs = require("fs");
-const rootPath = require("../utils/path");
 const path = require("path");
-
 const PDFDocument = require("pdfkit");
+
+const rootPath = require("../utils/path");
+const { getPageList }  = require("../utils/page");
 
 const Product = require("../models/product");
 const User = require("../models/user");
@@ -10,16 +11,16 @@ const Order = require("../models/order");
 
 exports.getIndex = (req, res, next) => {
   let currentPage = !req.query.page ? 1 : parseInt(req.query.page);
-  let TOTAL_PER_VIEW = 1;
-  console.log(currentPage);
+  const TOTAL_ITEMS_PER_PAGE = 2;
   Product.count().then((amount) => {
-    const amountPage = Math.ceil(amount / TOTAL_PER_VIEW);
-    if (currentPage>amountPage || currentPage <= 0){
-      res.redirect("/")
-    }
+    const amountPage = Math.ceil(amount / TOTAL_ITEMS_PER_PAGE);
+    if (currentPage > amountPage || currentPage <= 0) {
+      res.redirect("/");
+    } // control keep on range
+    const listPage = getPageList(amountPage, currentPage);
     return Product.find()
-      .skip((currentPage - 1) * TOTAL_PER_VIEW)
-      .limit(TOTAL_PER_VIEW)
+      .skip((currentPage - 1) * TOTAL_ITEMS_PER_PAGE)
+      .limit(TOTAL_ITEMS_PER_PAGE)
       .then((products) => {
         return res.render("shop/index", {
           prods: products,
@@ -30,10 +31,10 @@ exports.getIndex = (req, res, next) => {
           productCSS: true,
           isAuthenticated: req.session.isLoggedIn,
           currentPage: currentPage,
-          beforePage: currentPage-1,
-          nextPage: currentPage+1,
+          listPage: listPage,
           amountPage: amountPage,
-          finalPage: (currentPage+1) === amountPage
+          markFirst: !listPage.includes(1),
+          markLast: !listPage.includes(amountPage),
         });
       })
       .catch((err) => console.log(err));
