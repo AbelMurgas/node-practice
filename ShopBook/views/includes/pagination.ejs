@@ -1,0 +1,11 @@
+<section class="pagination">
+ <% if (markFirst){ %>
+         <a href="?page=1"><%= 1 %></a> ...
+ <% } %>
+ <% listPage.forEach(i => { %>
+     <a href="?page=<%= i %>" class="<%= (currentPage === i) ? 'markPagination' : '' %>"><%= i %></a>
+ <% }) %>
+ <% if (markLast){ %>
+     ... <a href="?page=<%= amountPage %>"><%= amountPage %></a>
+ <% } %>
+</section>

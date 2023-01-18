@@ -15,7 +15,7 @@ exports.getIndex = (req, res, next) => {
   Product.count().then((amount) => {
     const amountPage = Math.ceil(amount / TOTAL_ITEMS_PER_PAGE);
     if (currentPage > amountPage || currentPage <= 0) {
-      res.redirect("/");
+      res.redirect("shop/index");
     } // control keep on range
     const listPage = getPageList(amountPage, currentPage);
     return Product.find()
@@ -42,19 +42,35 @@ exports.getIndex = (req, res, next) => {
 };
 
 exports.getProducts = (req, res, next) => {
-  Product.find()
-    .then((products) => {
-      res.render("shop/product-list", {
-        prods: products,
-        pageTitle: "Products",
-        path: "/products",
-        hasProducts: products.length > 0,
-        activeShop: true,
-        productCSS: true,
-        isAuthenticated: req.session.isLoggedIn,
-      });
-    })
-    .catch((err) => console.log(err));
+  let currentPage = !req.query.page ? 1 : parseInt(req.query.page);
+  const TOTAL_ITEMS_PER_PAGE = 2;
+  Product.count().then((amount) => {
+    const amountPage = Math.ceil(amount / TOTAL_ITEMS_PER_PAGE);
+    if (currentPage > amountPage || currentPage <= 0) {
+      res.redirect("/");
+    } // control keep on range
+    const listPage = getPageList(amountPage, currentPage);
+    return Product.find()
+      .skip((currentPage - 1) * TOTAL_ITEMS_PER_PAGE)
+      .limit(TOTAL_ITEMS_PER_PAGE)
+      .then((products) => {
+        return res.render("shop/product-list", {
+          prods: products,
+          pageTitle: "Products",
+          path: "/products",
+          hasProducts: products.length > 0,
+          activeShop: true,
+          productCSS: true,
+          isAuthenticated: req.session.isLoggedIn,
+          currentPage: currentPage,
+          listPage: listPage,
+          amountPage: amountPage,
+          markFirst: !listPage.includes(1),
+          markLast: !listPage.includes(amountPage),
+        });
+      })
+      .catch((err) => console.log(err));
+  })
 };
 
 exports.getProduct = (req, res) => {
