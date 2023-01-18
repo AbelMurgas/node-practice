@@ -2,6 +2,8 @@ const Product = require("../models/product");
 const { validationResult } = require("express-validator");
 const { deleteFile } = require("../utils/file");
 
+const { getPageList }  = require("../utils/page");
+
 exports.getAddProduct = (req, res, next) => {
   res.render("admin/add-product", {
     pageTitle: "Add Product",
@@ -12,22 +14,35 @@ exports.getAddProduct = (req, res, next) => {
 
 exports.getHomeAdmin = (req, res) => {
   const user = req.session.user;
-  Product.find({ userId: user })
-    .then((products) => {
-      console.log(products);
-      res.render("admin/products", {
-        prods: products,
-        pageTitle: "Products",
-        path: "/admin/products",
-        hasProducts: products.length > 0,
-        activeShop: true,
-        productCSS: true,
-        isAuthenticated: req.session.isLoggedIn,
-      });
-    })
-    .catch((err) => {
-      console.log(err);
-    });
+  let currentPage = !req.query.page ? 1 : parseInt(req.query.page);
+  const TOTAL_ITEMS_PER_PAGE = 2;
+  Product.count({ userId: user }).then((amount) => {
+    const amountPage = Math.ceil(amount / TOTAL_ITEMS_PER_PAGE);
+    if (currentPage > amountPage || currentPage <= 0) {
+      return res.redirect("/admin/products");
+    } // control keep on range
+    const listPage = getPageList(amountPage, currentPage);
+    return Product.find({ userId: user })
+      .skip((currentPage - 1) * TOTAL_ITEMS_PER_PAGE)
+      .limit(TOTAL_ITEMS_PER_PAGE)
+      .then((products) => {
+        return res.render("admin/products", {
+          prods: products,
+          pageTitle: "Products",
+          path: "/admin/products",
+          hasProducts: products.length > 0,
+          activeShop: true,
+          productCSS: true,
+          isAuthenticated: req.session.isLoggedIn,
+          currentPage: currentPage,
+          listPage: listPage,
+          amountPage: amountPage,
+          markFirst: !listPage.includes(1),
+          markLast: !listPage.includes(amountPage),
+        });
+      })
+      .catch((err) => console.log(err));
+  })
 };
 
 exports.getEditAdmin = (req, res) => {

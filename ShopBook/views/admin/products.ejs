@@ -37,8 +37,11 @@
                             </article>
                             <% } %>
                     </div>
-                    <% } else { %>
-                        <h1>No Products Found!</h1>
-                        <% } %>
+                    <% if (listPage.length > 1) { %>
+                        <%- include('../includes/pagination.ejs', {markLast: markLast, markFirst: markFirst, currentPage: currentPage}) %>
+                    <% } %>
+                <% } else { %>
+                    <h1>No Products Found!</h1>
+                    <% } %>
             </main>
             <%- include('../includes/end.ejs') %>
