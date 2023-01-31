@@ -27,6 +27,6 @@ router.get(
 
 router.post("/edit-product/", isAuth, adminProductCrontoller.postEditAdmin);
 
-router.post("/delete-product/", isAuth, adminProductCrontoller.postDeleteAdmin);
+router.delete("/product/:productId", isAuth, adminProductCrontoller.deleteAdmin);
 
 module.exports = router;

@@ -3,7 +3,7 @@ const path = require("path");
 const PDFDocument = require("pdfkit");
 
 const rootPath = require("../utils/path");
-const { getPageList }  = require("../utils/page");
+const { getPageList } = require("../utils/page");
 
 const Product = require("../models/product");
 const User = require("../models/user");
@@ -70,7 +70,7 @@ exports.getProducts = (req, res, next) => {
         });
       })
       .catch((err) => console.log(err));
-  })
+  });
 };
 
 exports.getProduct = (req, res) => {
@@ -161,6 +161,26 @@ exports.getInvoice = (req, res, next) => {
       doc.text("Total price: $" + totalPrice);
       doc.end();
     });
+};
+
+exports.getCheckout = (req, res, next) => {
+  let totalPrice = 0;
+  req.user
+    .populate("cart.items.productId")
+    .then((user) => {
+      const products = user.cart.items;
+      products.map((data) => {
+        totalPrice += data.productId.price * data.quantity;
+      });
+      res.render("shop/checkout", {
+        path: "/checkout",
+        pageTitle: "Checkout",
+        products: products,
+        totalPrice: totalPrice,
+        isAuthenticated: req.session.isLoggedIn,
+      });
+    })
+    .catch((err) => console.log(err));
 };
 
 exports.postCart = (req, res, next) => {

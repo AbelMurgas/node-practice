@@ -2,7 +2,7 @@ const Product = require("../models/product");
 const { validationResult } = require("express-validator");
 const { deleteFile } = require("../utils/file");
 
-const { getPageList }  = require("../utils/page");
+const { getPageList } = require("../utils/page");
 
 exports.getAddProduct = (req, res, next) => {
   res.render("admin/add-product", {
@@ -42,7 +42,7 @@ exports.getHomeAdmin = (req, res) => {
         });
       })
       .catch((err) => console.log(err));
-  })
+  });
 };
 
 exports.getEditAdmin = (req, res) => {
@@ -146,22 +146,28 @@ exports.postEditAdmin = (req, res) => {
       product.price = newProduct.price;
       product.description = newProduct.description;
       product.imageUrl = newProduct.imageUrl;
-      product.save()
+      product.save();
       console.log("UPDATED PRODUCT");
       res.redirect("/admin/products");
     })
     .catch((err) => console.log(err));
 };
 
-exports.postDeleteAdmin = (req, res) => {
-  const productId = req.body.id;
+exports.deleteAdmin = (req, res) => {
+  const productId = req.params.productId;
   Product.findById(productId)
     .then((product) => {
       deleteFile(product.imageUrl);
-      product.remove().then(result => {
+      product.remove().then((result) => {
         console.log("DELETED PRODUCT");
-        res.redirect("/admin/products");
-      })
+        res.status(200).json({
+          message: "Success!",
+        });
+      });
     })
-    .catch((err) => console.log(err));
+    .catch((err) => {
+      res.status(500).json({
+        message: "Deleting product fail",
+      });
+    });
 };
